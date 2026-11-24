@@ -9,6 +9,7 @@ namespace TicketsServer.Services
         Task<bool> UpdateTicketStatus(int id, TicketStatus ticketStatus);
         Task<bool> DeleteTicket(int id);
         Task<List<TicketDto>> GetAllTickets(TicketStatus? status, TicketPriority? priority, string? search);
+        
 
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TicketsServer.DTOs;
 using TicketsServer.Entities;
 using TicketsServer.Enums;
@@ -50,7 +51,7 @@ namespace TicketsServer.Controllers
             return NoContent();
         }
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateTicketStatus(int id, TicketStatus status)
+        public async Task<IActionResult> UpdateTicketStatus(int id, [BindRequired] TicketStatus status)
         {
             var success=await _ticketService.UpdateTicketStatus(id, status);
             if (!success)
@@ -59,5 +60,7 @@ namespace TicketsServer.Controllers
             }
             return NoContent();
         }
+     
+
     }
 }
