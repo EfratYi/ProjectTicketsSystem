@@ -27,18 +27,8 @@ namespace TicketsServer.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTicket(CreateTicketDto createTicketDto)
         {
-            try
-            {
-                var created = await _ticketService.CreateTicket(createTicketDto);
-                return StatusCode(201, created);
-            }
-            catch (ArgumentException ex) { 
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
+            var created = await _ticketService.CreateTicket(createTicketDto);
+            return StatusCode(201, created);
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTicket(int id)

@@ -2,13 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using TicketsServer.Data;
 using System.Text.Json.Serialization;
 using TicketsServer.Services;
+using TicketsServer.Repository;
 var builder = WebApplication.CreateBuilder(args);
 // Connection to DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ITicketService, TicketService>();
-
+builder.Services.AddScoped<ITicketRepository,TicketRepository >();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
