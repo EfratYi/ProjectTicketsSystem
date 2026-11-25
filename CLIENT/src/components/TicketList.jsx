@@ -2,14 +2,19 @@ import { useEffect, useState } from 'react'
 import { getTickets, updateTicketStatus, deleteTicket, createTicket } from '../services/api.js'
 import TicketRow from '../pages/TicketRow.jsx'
 import CreateTicket from './CreateTicket.jsx'
+import { statuses } from '../constants/ticketOptions.jsx'
 export default function TicketList() {
     const [tickets, setTickets] = useState([])
     const [loading, setLoading] = useState(true)
     const [isCreateOpen, setIsCreateOpen] = useState(false)
+    const [filterStatus, setFilterStatus] = useState('')
+    const [searchTitle, setSearchTitle] = useState('')
+    const [error, setError] = useState("");
+
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await getTickets();
+                const response = await getTickets(filterStatus, '', searchTitle);
                 setTickets(response.data);
             } catch (error) {
                 console.error('Error fetching tickets:', error);
@@ -18,7 +23,7 @@ export default function TicketList() {
             }
         };
         fetchTickets();
-    }, [])
+    }, [filterStatus, searchTitle]);
 
 
     const handleStatusChange = async (ticketId, newStatus) => {
@@ -44,15 +49,17 @@ export default function TicketList() {
         }
     };
     const handleCreateTicket = async (newTicket) => {
-        console.log('Creating ticket:', newTicket);
+        setError("");
         try {
             const response = await createTicket(newTicket);
             setTickets((prevTickets) => [...prevTickets, response.data]);
             setIsCreateOpen(false);
         }
+
         catch (error) {
             console.error('Error creating ticket:', error);
-            alert('לא ניתן ליצור קריאת תמיכה  ');
+            const serverError = error.response?.data?.message || error.response?.data || 'לא ניתן ליצור קריאת תמיכה ';
+            setError(serverError);
         }
 
     }
@@ -60,21 +67,44 @@ export default function TicketList() {
     if (loading) return <p className="text-blue-600 font-medium">טוען נתונים...</p>;
     return (
         <div>
+
             <div className="mt-8 overflow-x-auto">
-                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => setIsCreateOpen(true)}>
+                <button className="border rounded-md py-1 px-2 focus:outline-none bg-blue-300 hover:bg-blue-500 " onClick={() => setIsCreateOpen(true)}>
                     צור קריאה חדשה
                 </button>
                 {isCreateOpen && (
                     <div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs z-50">
-                        <div className="bg-white p-6 rounded shadow-lg w-96">
-                            <CreateTicket handleSubmit={handleCreateTicket} handleClose={() => setIsCreateOpen(false)} />
-                        </div>
+                        <CreateTicket handleSubmit={handleCreateTicket} handleClose={() => { setError(""); setIsCreateOpen(false); }} errorMessage={error} clearError={() => setError("")}/>
                     </div>
                 )}
             </div>
+            <label className="flex justify-start gap-3 mt-6 pt-3 ">
+                <input
+                    type="text"
+                    placeholder="חפש לפי כותרת..."
+                    value={searchTitle}
+                    onChange={(e) => setSearchTitle(e.target.value)}
+                    className=" border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3"
+                />
+                <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className=" border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">כל הסטטוסים</option>
+                    {statuses.map((status) => (
+                        <option key={status.value} value={status.value}>
+                            {status.label}
+                        </option>
+                    ))}
+                </select>
+            </label>
+
             {tickets.length === 0 ? (
                 <p className="text-gray-600 mt-4">אין קריאות שירות להצגה.</p>
             ) : (
+
+
                 <table className="w-full border border-gray-300 rounded-lg overflow-hidden shadow-md">
                     <thead>
                         <tr className="bg-slate-50 border-b text-slate-600 text-sm">
