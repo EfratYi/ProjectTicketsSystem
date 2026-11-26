@@ -7,12 +7,16 @@ export default React.memo(function CreateTicket({ onCreateTicket, onClose, error
         status: 'Open',
         priority: 'Low',
     });
-
+    const handleSubmit = (e) => {
+    e.preventDefault();
+    onCreateTicket(TicetData);
+};
     return (
-        <div className=" bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-right">
+        <form noValidate className=" bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-right" onSubmit={handleSubmit}>
             <h3 className="text-lg font-semibold mb-4"> קריאה חדשה</h3>
             <label className="block mb-2 text-sm font-semibold text-gray-700">
-                <span>כותרת: <span className="text-red-500">*</span></span>                <input
+                <span>כותרת: <span className="text-red-500">*</span></span>             
+                   <input
                     type="text"
                     required
                     value={TicetData.title}
@@ -60,19 +64,20 @@ export default React.memo(function CreateTicket({ onCreateTicket, onClose, error
             )}
             <div className="flex justify-end gap-3 mt-2 pt-2 ">
                 <button
-                    onClick={() => onCreateTicket(TicetData)}
+                    type='submit'
                     className="bg-blue-900 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
                 >
                     יצירת קריאה
                 </button>
                 <button
+                type='button'
                     onClick={onClose}
                     className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
                 >
                     ביטול
                 </button>
             </div>
-        </div>
+        </form>
     )
 }
 )

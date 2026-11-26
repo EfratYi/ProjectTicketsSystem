@@ -44,9 +44,9 @@ namespace TicketsServer.Services
             return await _ticketRepository.DeleteAsync(id);
             
         }
-        public async Task<List<TicketDto>> GetAllTickets(TicketStatus? status, TicketPriority? priority, string? search)
+        public async Task<List<TicketDto>> GetAllTickets(TicketFilter? ticketFilter, string? search)
         {
-            var ticketes =await _ticketRepository.GetAllAsync(status,priority,search);
+            var ticketes = await _ticketRepository.GetAllAsync(ticketFilter, search);
             return ticketes.Select(e => new TicketDto
             {
                 Id = e.Id,
@@ -57,9 +57,6 @@ namespace TicketsServer.Services
                 CreatedAt = e.CreatedAt,
             }).ToList();
         }
-     
-
-
     }
 
 }

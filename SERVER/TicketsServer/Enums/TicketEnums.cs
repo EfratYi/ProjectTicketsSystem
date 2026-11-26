@@ -10,5 +10,8 @@
         InProgress = 1,
         Closed = 2,
     }
-  
+    public record TicketFilter(
+     TicketStatus? Status = null,
+     TicketPriority? Priority = null
+     );
 }

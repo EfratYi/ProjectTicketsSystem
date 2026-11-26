@@ -32,9 +32,6 @@ export default memo(function TicketRow({ ticket, onStatusChange, onDelete }) {
                         </div>
                     </div>
                 </td>
-                {/* <td className="max-h-[12vh] overflow-y-auto whitespace-pre-wrap break-words text-sm leading-relaxed pl-2">
-                    {ticket.problemDescription}
-                </td> */}
                 <td className="px-6 py-3">
                     <select value={ticket.status} onChange={(e) => onStatusChange(ticket.id, e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         {statuses.map((status) => (

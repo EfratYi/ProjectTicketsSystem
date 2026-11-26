@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TicketsServer.DTOs;
-using TicketsServer.Entities;
 using TicketsServer.Enums;
 using TicketsServer.Services;
 
@@ -19,9 +18,9 @@ namespace TicketsServer.Controllers
             _ticketService = ticketService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllTickets([FromQuery] TicketStatus? status, [FromQuery] TicketPriority? priority, [FromQuery] string? search)
+        public async Task<IActionResult> GetAllTickets([FromQuery] TicketFilter? ticketFilter, [FromQuery] string? search)
         {
-            var tickets=await _ticketService.GetAllTickets(status, priority, search);    
+            var tickets = await _ticketService.GetAllTickets(ticketFilter, search);
             return Ok(tickets);
         }
         [HttpPost]

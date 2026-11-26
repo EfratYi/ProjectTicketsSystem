@@ -4,7 +4,7 @@ export default React.memo(
     function TicketFilters({ filters, onSetFilters, searchTitle, onSetSearchTitle }) {
         const selectFilters = [
             { name: "status", defaultlabel: 'כל הסטטוסים', options: statuses },
-            { name: "priority", defaultlabel: 'כל הדחיפויות', options: priorities },
+            // { name: "priority", defaultlabel: 'כל הדחיפויות', options: priorities },
         ]
         return (
             <div className="flex justify-start gap-3 mt-6 pt-3 ">

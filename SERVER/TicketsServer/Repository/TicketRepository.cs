@@ -40,16 +40,16 @@ namespace TicketsServer.Repository
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<List<Ticket>> GetAllAsync(TicketStatus? status, TicketPriority? priority, string? search)
+        public async Task<List<Ticket>> GetAllAsync(TicketFilter? ticketFilter, string? search)
         {
             var query = _context.Tickets.AsQueryable();
-            if (status is not null)
+            if (ticketFilter?.Status is not null)
             {
-                query = query.Where(t => t.Status == status);
+                query = query.Where(t => t.Status == ticketFilter.Status);
             }
-            if (priority is not null)
+            if (ticketFilter?.Priority is not null)
             {
-                query = query.Where(t => t.Priority == priority);
+                query = query.Where(t => t.Priority == ticketFilter.Priority);
             }
             if (!string.IsNullOrWhiteSpace(search))
             {
