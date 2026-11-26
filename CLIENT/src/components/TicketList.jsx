@@ -1,20 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { useDebounce } from '../hook/useDebounce.jsx'
 import { getTickets, updateTicketStatus, deleteTicket, createTicket } from '../services/api.js'
 import TicketRow from '../pages/TicketRow.jsx'
 import CreateTicket from './CreateTicket.jsx'
-import { statuses } from '../constants/ticketOptions.jsx'
+import TicketFilters from './TicketFilters.jsx'
 export default function TicketList() {
     const [tickets, setTickets] = useState([])
     const [loading, setLoading] = useState(true)
     const [isCreateOpen, setIsCreateOpen] = useState(false)
-    const [filterStatus, setFilterStatus] = useState('')
     const [searchTitle, setSearchTitle] = useState('')
     const [error, setError] = useState("");
+    const debouncedText = useDebounce(searchTitle, 1000);
+
+    const [filters, setFilters] = useState({
+        status: '',
+        priority: '',
+    });
 
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await getTickets(filterStatus, '', searchTitle);
+                const response = await getTickets(filters.status, filters.priority, debouncedText);
                 setTickets(response.data);
             } catch (error) {
                 console.error('Error fetching tickets:', error);
@@ -23,12 +29,12 @@ export default function TicketList() {
             }
         };
         fetchTickets();
-    }, [filterStatus, searchTitle]);
+    }, [filters, debouncedText]);
 
 
-    const handleStatusChange = async (ticketId, newStatus) => {
+    const handleStatusChange = useCallback(async (ticketId, newStatus) => {
         try {
-            const response = await updateTicketStatus(ticketId, newStatus);
+            await updateTicketStatus(ticketId, newStatus);
             setTickets((prevTickets) =>
                 prevTickets.map((ticket) =>
                     ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
@@ -38,8 +44,8 @@ export default function TicketList() {
             console.error('Error updating ticket status:', error);
             alert('לא ניתן היה לעדכן את הסטטוס בשרת');
         }
-    }
-    const handleDeleteTicket = async (ticketId) => {
+    }, []);
+    const handleDeleteTicket = useCallback(async (ticketId) => {
         try {
             await deleteTicket(ticketId);
             setTickets((prevTickets) => prevTickets.filter((ticket) => ticket.id !== ticketId));
@@ -47,22 +53,29 @@ export default function TicketList() {
             console.error('Error deleting ticket:', error);
             alert('לא ניתן למחוק את הקריאת שירות  ');
         }
-    };
-    const handleCreateTicket = async (newTicket) => {
+    }, []);
+    const handleCreateTicket = useCallback(async (newTicket) => {
         setError("");
         try {
             const response = await createTicket(newTicket);
-            setTickets((prevTickets) => [...prevTickets, response.data]);
+            setTickets((prevTickets) => [...prevTickets, response.data].filter((ticket) => {
+                const isMismatch = Object.entries(filters).some(([key, value]) => {
+                    if (value && ticket[key] != value) {
+                        return true;
+                    }
+                });
+                const isSearchMismatch = debouncedText && !ticket.title.includes(debouncedText);
+                return !isMismatch && !isSearchMismatch;
+            }));
             setIsCreateOpen(false);
         }
 
         catch (error) {
-            console.error('Error creating ticket:', error);
-            const serverError = error.response?.data?.message || error.response?.data || 'לא ניתן ליצור קריאת תמיכה ';
+            const serverError = Object.values(error.response?.data?.errors || {}).flat()[0] || 'לא ניתן ליצור קריאת תמיכה ';
             setError(serverError);
         }
 
-    }
+    }, [filters, debouncedText]);
 
     if (loading) return <p className="text-blue-600 font-medium">טוען נתונים...</p>;
     return (
@@ -74,38 +87,16 @@ export default function TicketList() {
                 </button>
                 {isCreateOpen && (
                     <div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs z-50">
-                        <CreateTicket handleSubmit={handleCreateTicket} handleClose={() => { setError(""); setIsCreateOpen(false); }} errorMessage={error} clearError={() => setError("")}/>
+                        <CreateTicket onCreateTicket={handleCreateTicket} onClose={() => { setError(""); setIsCreateOpen(false); }} errorMessage={error} clearError={() => setError("")} />
                     </div>
                 )}
             </div>
-            <label className="flex justify-start gap-3 mt-6 pt-3 ">
-                <input
-                    type="text"
-                    placeholder="חפש לפי כותרת..."
-                    value={searchTitle}
-                    onChange={(e) => setSearchTitle(e.target.value)}
-                    className=" border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3"
-                />
-                <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className=" border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="">כל הסטטוסים</option>
-                    {statuses.map((status) => (
-                        <option key={status.value} value={status.value}>
-                            {status.label}
-                        </option>
-                    ))}
-                </select>
-            </label>
-
+            <TicketFilters filters={filters} onSetFilters={setFilters} searchTitle={searchTitle} onSetSearchTitle={setSearchTitle} />
             {tickets.length === 0 ? (
                 <p className="text-gray-600 mt-4">אין קריאות שירות להצגה.</p>
             ) : (
-
-
-                <table className="w-full border border-gray-300 rounded-lg overflow-hidden shadow-md">
+                <div className="mt-4 h-[65vh] overflow-auto border border-gray-300 rounded-lg shadow-md bg-white">
+                <table className="w-full  border  border-gray-300 rounded-lg overflow-hidden shadow-md">
                     <thead>
                         <tr className="bg-slate-50 border-b text-slate-600 text-sm">
                             <th className="px-6 py-2">כותרת</th>
@@ -122,6 +113,7 @@ export default function TicketList() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             )}
         </div>
     );

@@ -1,6 +1,6 @@
 import React from 'react'
 import { statuses, priorities } from '../constants/ticketOptions.jsx'
-export default function CreateTicket({ handleSubmit, handleClose, errorMessage }) {
+export default React.memo(function CreateTicket({ onCreateTicket, onClose, errorMessage }) {
     const [TicetData, setTicketData] = React.useState({
         title: '',
         problemDescription: '',
@@ -60,14 +60,13 @@ export default function CreateTicket({ handleSubmit, handleClose, errorMessage }
             )}
             <div className="flex justify-end gap-3 mt-2 pt-2 ">
                 <button
-                    onClick={() => handleSubmit(TicetData)}
+                    onClick={() => onCreateTicket(TicetData)}
                     className="bg-blue-900 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded"
                 >
                     יצירת קריאה
                 </button>
                 <button
-                    onClick={handleClose}
-
+                    onClick={onClose}
                     className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
                 >
                     ביטול
@@ -76,4 +75,4 @@ export default function CreateTicket({ handleSubmit, handleClose, errorMessage }
         </div>
     )
 }
-
+)
